@@ -60,7 +60,9 @@ public class Main {
                 break;
             }
             if (i == 0) {
-                stringBuilder.repeat(WHITESPACE, width);
+                for (int j = 0; j < width; j++) {
+                    stringBuilder.append(WHITESPACE);
+                }
                 stringBuilder.setCharAt(halfWidth, OCTOTHORPE);
                 if (width % 2 == 0) {
                     stringBuilder.setCharAt(halfWidth - 1, OCTOTHORPE);
@@ -85,7 +87,9 @@ public class Main {
 
     private static void appendSideAngles(int width, StringBuilder stringBuilder) {
         stringBuilder.append(OCTOTHORPE);
-        stringBuilder.repeat(WHITESPACE, width - 2);
+        for (int j = 0; j < width - 2; j++) {
+            stringBuilder.append(WHITESPACE);
+        }
         stringBuilder.append(OCTOTHORPE);
     }
 

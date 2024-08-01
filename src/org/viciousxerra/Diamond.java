@@ -6,7 +6,8 @@ import static java.lang.Math.round;
 
 public class Diamond {
 
-    private static final int SIZE_LIMIT = 1;
+    private static final int MIN_SIZE = 1;
+    private static final int HEIGHT_WIDTH_SIZE_LIMIT = 2;
     private static final char WHITESPACE = ' ';
     private static final char OCTOTHORPE = '#';
     private final int height;
@@ -19,17 +20,13 @@ public class Diamond {
     }
 
     public void print() {
+        int halfHeight = height >> 1;
+        int halfWidth = width >> 1;
         if (isBoundaryCase()) {
-            for (int i = 0; i < height; i++) {
-                for (int j = 0; j < width; j++) {
-                    System.out.println(OCTOTHORPE);
-                }
-            }
+            printBoundaryCase(halfWidth);
             return;
         }
 
-        int halfHeight = height >> 1;
-        int halfWidth = width >> 1;
         float ratio = (float) width / height;
         float leftPos = halfWidth;
         float rightPos = halfWidth;
@@ -73,6 +70,25 @@ public class Diamond {
         }
     }
 
+    private void printBoundaryCase(int halfWidthIndex) {
+        for (int i = 0; i < height; i++) {
+            if (width % 2 == 0) {
+                for (int j = 0; j < width; j++) {
+                    System.out.print(OCTOTHORPE);
+                }
+            } else {
+                for (int j = 0; j < width; j++) {
+                    if (j == halfWidthIndex) {
+                        System.out.print(OCTOTHORPE);
+                        continue;
+                    }
+                    System.out.print(WHITESPACE);
+                }
+            }
+            System.out.println();
+        }
+    }
+
     private void appendSideAngles(StringBuilder stringBuilder) {
         stringBuilder.append(OCTOTHORPE);
         for (int j = 0; j < width - 2; j++) {
@@ -82,7 +98,7 @@ public class Diamond {
     }
 
     private boolean isBoundaryCase() {
-        return height == SIZE_LIMIT || width == SIZE_LIMIT;
+        return height <= HEIGHT_WIDTH_SIZE_LIMIT || width <= HEIGHT_WIDTH_SIZE_LIMIT;
     }
 
     private void renderRowAndPush(StringBuilder stringBuilder, Stack<String> bottomSide) {
@@ -92,7 +108,7 @@ public class Diamond {
     }
 
     private static void validate(int height, int width) {
-        if (height < SIZE_LIMIT || width < SIZE_LIMIT) {
+        if (height < MIN_SIZE || width < MIN_SIZE) {
             throw new IllegalArgumentException("Height and width must be positive.");
         }
     }

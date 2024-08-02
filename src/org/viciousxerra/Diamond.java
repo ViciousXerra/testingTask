@@ -131,16 +131,15 @@ public class Diamond {
                     printRowAndFlushStringBuilder(stringBuilder);
                 } else {
                     appendSideAnglesRow(stringBuilder);
-                    if (height % 2 == 0 && i == halfHeight - 1) {
-                        rowStack.push(stringBuilder.toString());
-                        printRowAndFlushStringBuilder(stringBuilder);
-                        break;
-                    } else if (height % 2 != 0 && i == halfHeight) {
+                    if (height % 2 != 0 && i == halfHeight) {
                         printRowAndFlushStringBuilder(stringBuilder);
                         break;
                     } else {
                         rowStack.push(stringBuilder.toString());
                         printRowAndFlushStringBuilder(stringBuilder);
+                        if (height % 2 == 0 && i == halfHeight - 1) {
+                            break;
+                        }
                     }
                 }
             }

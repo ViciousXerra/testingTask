@@ -7,103 +7,149 @@ import static java.lang.Math.round;
 public class Diamond {
 
     private static final int MIN_SIZE = 1;
-    private static final int HEIGHT_WIDTH_SIZE_LIMIT = 2;
+    private static final int HEIGHT_WIDTH_BOUNDARY_CASE_SIZE = 2;
     private static final char WHITESPACE = ' ';
     private static final char OCTOTHORPE = '#';
     private final int height;
+    private final int halfHeight;
     private final int width;
+    private final int halfWidth;
+    private final float ratio;
 
     public Diamond(int height, int width) {
         validate(height, width);
         this.height = height;
+        this.halfHeight = height >> 1;
         this.width = width;
+        this.halfWidth = width >> 1;
+        ratio = (float) width / height;
     }
 
     public void print() {
-        int halfHeight = height >> 1;
-        int halfWidth = width >> 1;
+        StringBuilder stringBuilder = new StringBuilder();
+        Stack<String> stack = new Stack<>();
         if (isBoundaryCase()) {
-            printBoundaryCase(halfWidth);
+            printBoundaryCase(stringBuilder, stack);
             return;
         }
-
-        float ratio = (float) width / height;
-        float leftPos = halfWidth;
-        float rightPos = halfWidth;
-        StringBuilder stringBuilder = new StringBuilder();
-        Stack<String> bottomSide = new Stack<>();
+        float currentLeftPos = halfWidth;
+        float currentRightPos = halfWidth;
         for (int i = 0; i <= halfHeight; i++) {
-            if (i == halfHeight - 1 && height % 2 == 0) {
-                appendSideAngles(stringBuilder);
-                renderRowAndPush(stringBuilder, bottomSide);
-                break;
-            }
-            if (i == halfHeight && height % 2 != 0) {
-                appendSideAngles(stringBuilder);
-                System.out.println(stringBuilder);
-                stringBuilder.setLength(0);
-                break;
-            }
             if (i == 0) {
-                for (int j = 0; j < width; j++) {
+                appendTopSideAngleRow(stringBuilder);
+                stack.push(stringBuilder.toString());
+                printRowAndFlushStringBuilder(stringBuilder);
+                continue;
+            }
+            if (height % 2 != 0 && i == halfHeight) {
+                appendSideAnglesRow(stringBuilder);
+                printRowAndFlushStringBuilder(stringBuilder);
+                continue;
+            }
+            if (height % 2 == 0 && i == halfHeight - 1) {
+                appendSideAnglesRow(stringBuilder);
+                stack.push(stringBuilder.toString());
+                printRowAndFlushStringBuilder(stringBuilder);
+                break;
+            }
+            currentLeftPos -= ratio;
+            currentRightPos += ratio;
+            for (int j = 0; j < width; j++) {
+                if (j == round(currentLeftPos) || j == round(currentRightPos)) {
+                    stringBuilder.append(OCTOTHORPE);
+                } else {
                     stringBuilder.append(WHITESPACE);
                 }
-                stringBuilder.setCharAt(halfWidth, OCTOTHORPE);
-                if (width % 2 == 0) {
-                    stringBuilder.setCharAt(halfWidth - 1, OCTOTHORPE);
-                }
-            } else {
-                leftPos -= ratio;
-                rightPos += ratio;
-                for (int j = 0; j < width; j++) {
-                    if (j == round(leftPos) || j == round(rightPos)) {
-                        stringBuilder.append(OCTOTHORPE);
-                    } else {
-                        stringBuilder.append(WHITESPACE);
-                    }
-                }
             }
-            renderRowAndPush(stringBuilder, bottomSide);
+            stack.push(stringBuilder.toString());
+            printRowAndFlushStringBuilder(stringBuilder);
         }
-        while (!bottomSide.isEmpty()) {
-            System.out.println(bottomSide.pop());
+        printBottomSide(stack);
+    }
+
+    private void appendSideAnglesRow(StringBuilder stringBuilder) {
+        for (int j = 0; j < width; j++) {
+            if (j == 0 || j == width - 1) {
+                stringBuilder.append(OCTOTHORPE);
+            } else {
+                stringBuilder.append(WHITESPACE);
+            }
         }
     }
 
-    private void printBoundaryCase(int halfWidthIndex) {
-        for (int i = 0; i < height; i++) {
-            if (width % 2 == 0) {
-                for (int j = 0; j < width; j++) {
-                    System.out.print(OCTOTHORPE);
-                }
+    private void appendTopSideAngleRow(StringBuilder stringBuilder) {
+        for (int j = 0; j < width; j++) {
+            if (j == halfWidth) {
+                stringBuilder.append(OCTOTHORPE);
             } else {
-                for (int j = 0; j < width; j++) {
-                    if (j == halfWidthIndex) {
-                        System.out.print(OCTOTHORPE);
-                        continue;
-                    }
-                    System.out.print(WHITESPACE);
-                }
+                stringBuilder.append(WHITESPACE);
             }
-            System.out.println();
         }
-    }
-
-    private void appendSideAngles(StringBuilder stringBuilder) {
-        stringBuilder.append(OCTOTHORPE);
-        for (int j = 0; j < width - 2; j++) {
-            stringBuilder.append(WHITESPACE);
-        }
-        stringBuilder.append(OCTOTHORPE);
     }
 
     private boolean isBoundaryCase() {
-        return height <= HEIGHT_WIDTH_SIZE_LIMIT || width <= HEIGHT_WIDTH_SIZE_LIMIT;
+        return height == MIN_SIZE ||
+               width == MIN_SIZE ||
+               height == HEIGHT_WIDTH_BOUNDARY_CASE_SIZE ||
+               width == HEIGHT_WIDTH_BOUNDARY_CASE_SIZE;
     }
 
-    private void renderRowAndPush(StringBuilder stringBuilder, Stack<String> bottomSide) {
+
+    private void printBottomSide(Stack<String> rowStack) {
+        while (!rowStack.isEmpty()) {
+            System.out.println(rowStack.pop());
+        }
+    }
+
+    private void printBoundaryCase(StringBuilder stringBuilder, Stack<String> rowStack) {
+        if (height == MIN_SIZE) {
+            for (int j = 0; j < width; j++) {
+                System.out.print(OCTOTHORPE);
+            }
+            System.out.println();
+            return;
+        }
+        if (height == HEIGHT_WIDTH_BOUNDARY_CASE_SIZE) {
+            for (int i = 0; i < height; i++) {
+                appendTopSideAngleRow(stringBuilder);
+                printRowAndFlushStringBuilder(stringBuilder);
+            }
+            return;
+        }
+        if (width == MIN_SIZE) {
+            for (int i = 0; i < height; i++) {
+                System.out.println(OCTOTHORPE);
+            }
+            return;
+        }
+        if (width == HEIGHT_WIDTH_BOUNDARY_CASE_SIZE) {
+            float minExtensionCoordinateDelta = (float) halfHeight / 2;
+            for (int i = 0; i <= halfHeight; i++) {
+                if (i == 0 || i < minExtensionCoordinateDelta) {
+                    appendTopSideAngleRow(stringBuilder);
+                    rowStack.push(stringBuilder.toString());
+                    printRowAndFlushStringBuilder(stringBuilder);
+                } else {
+                    appendSideAnglesRow(stringBuilder);
+                    if (height % 2 == 0 && i == halfHeight - 1) {
+                        rowStack.push(stringBuilder.toString());
+                        printRowAndFlushStringBuilder(stringBuilder);
+                        break;
+                    } else if (height % 2 != 0 && i == halfHeight) {
+                        printRowAndFlushStringBuilder(stringBuilder);
+                        break;
+                    } else {
+                        rowStack.push(stringBuilder.toString());
+                        printRowAndFlushStringBuilder(stringBuilder);
+                    }
+                }
+            }
+            printBottomSide(rowStack);
+        }
+    }
+
+    private static void printRowAndFlushStringBuilder(StringBuilder stringBuilder) {
         System.out.println(stringBuilder);
-        bottomSide.push(stringBuilder.toString());
         stringBuilder.setLength(0);
     }
 
